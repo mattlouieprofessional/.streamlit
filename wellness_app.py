@@ -7,16 +7,22 @@ import time
 st.set_page_config(page_title="ProCARE CARE Portal", layout="wide")
 HR_PASSWORD = "procareadmin" 
 
-# --- 2. DATA ENGINE ---
-def get_procare_data():
+# --- 2. DATA ENGINE (Updated for Live Submissions) ---
+def get_initial_data():
     data = {
         'Employee_ID': ['EMP-101', 'EMP-102', 'EMP-103', 'EMP-104', 'EMP-105'],
         'Mood_Score': [8, 3, 7, 2, 9],
         'Attendance_Rate': [95, 60, 88, 45, 100], 
+        'Sick_Days_Recent': [0, 4, 1, 6, 0],
         'Risk_Level': ['Low', 'High', 'Medium', 'Severe', 'Low'],
-        'Trend': ['Stable', 'Declining', 'Stable', 'Severe Drop', 'Stable']
+        'Trend': ['Stable', 'Declining', 'Stable', 'Severe Drop', 'Stable'],
+        'Satisfaction_eNPS': [9, 3, 8, 2, 10]
     }
     return pd.DataFrame(data)
+
+# This block ensures the data persists while you switch between views
+if 'app_data' not in st.session_state:
+    st.session_state.app_data = get_initial_data()
 
 # --- 3. SIDEBAR ---
 with st.sidebar:
@@ -40,10 +46,22 @@ if role == "Employee (Check-in)":
         attendance = st.selectbox("Work Status:", ["On-site", "Remote", "Sick/Personal Leave"])
 
     if st.button("Submit Pulse"):
-        st.toast("Pulse captured. Thank you for your honesty.")
-        if mood <= 4:
-            st.warning("It looks like you're carrying a lot today. Try the PFC reset below.")
-
+        # Create the new entry based on user input
+        new_entry = {
+            'Employee_ID': "LIVE-SUBMISSION",
+            'Mood_Score': mood,
+            'Attendance_Rate': 100 if attendance == "On-site" else (80 if attendance == "Remote" else 20),
+            'Sick_Days_Recent': 1 if attendance == "Sick/Personal Leave" else 0,
+            'Risk_Level': "Low" if mood > 5 else "High",
+            'Trend': "Recent Change",
+            'Satisfaction_eNPS': 5 # Default value
+        }
+        
+        # Add the new row to our 'Live' session database
+        st.session_state.app_data = pd.concat([st.session_state.app_data, pd.DataFrame([new_entry])], ignore_index=True)
+        
+        st.success("Pulse Captured! Thank you for providing your honest feedback. Take a minute to take a breath break.")
+        st.balloons()
     # --- INTERACTIVE NAVY SEAL BREATHING ---
     st.divider()
     st.subheader("Navy SEAL Box Breathing (Interactive)")
@@ -71,29 +89,41 @@ if role == "Employee (Check-in)":
                     progress_bar.progress(percent)
         
         st.balloons()
-        st.success("PFC Reset Complete. Great job taking care of yourself!")
+        st.success("Brain Break Complete. Great job taking care of yourself!")
 
 # --- 5. HR VIEW ---
+# --- 5. HR VIEW: INTERVENTION & OUTREACH ---
 elif role == "HR Representative (Admin)":
+    # Define the variable by taking the input immediately
     pwd = st.text_input("Enter Admin Password:", type="password")
+    
     if pwd == HR_PASSWORD:
-        st.header("📈 HR Retention Intelligence")
-        df = get_procare_data()
-
-        # Outreach Flags
-        at_risk = df[(df['Mood_Score'] <= 4) | (df['Attendance_Rate'] < 70)]
-        st.subheader("🚨 Priority Outreach List")
+        st.header("📈 HR Wellness & Outreach Dashboard")
+        st.write("Target: Identifying churn risk 60-90 days in advance.") 
         
+        # Use the session data for live updates
+        display_df = st.session_state.app_data
+
+        # 1. Identify At-Risk Employees (The Predictive Layer) [cite: 41]
+        # Filtering for low mood or low attendance as burnout precursors [cite: 66]
+        at_risk = display_df[(display_df['Mood_Score'] <= 4) | (display_df['Attendance_Rate'] < 70)]
+
+        st.subheader("🚨 Priority Outreach List")
         if not at_risk.empty:
-            st.write(at_risk[['Employee_ID', 'Mood_Score', 'Attendance_Rate', 'Risk_Level']])
-            st.info("💡 Reach out to these individuals to offer flexible scheduling or wellness resources.")
+            st.write(at_risk)
+            st.info("💡 ProCARE CARE Tip: Reach out to offer workload adjustments or 1:1 check-ins.") 
         else:
-            st.success("All systems green. No critical burnout signals detected.")
+            st.success("No high-risk signals detected at this time.")
 
-        # Risk Matrix
-        fig = px.scatter(df, x="Mood_Score", y="Attendance_Rate", color="Risk_Level", 
-                         size=[20, 20, 20, 20, 20], title="Mood vs Attendance Correlation")
-        st.plotly_chart(fig)
+        # 2. Visualization (The Retention Intelligence Layer) [cite: 15, 17]
+        fig = px.scatter(display_df, 
+                         x="Mood_Score", 
+                         y="Attendance_Rate", 
+                         size="Sick_Days_Recent", 
+                         color="Risk_Level",
+                         hover_name="Employee_ID",
+                         title="Retention Intelligence: Mood vs. Attendance Correlation") 
+        st.plotly_chart(fig, use_container_width=True)
 
-    elif pwd:
-        st.error("Access Denied.")
+    elif pwd != "":  # Only show error if they actually typed something wrong
+        st.error("Unauthorized Access. Please check your credentials.")
