@@ -121,7 +121,7 @@ elif role == "HR Admin View":
             st.success("All systems green. No critical burnout signals detected.")
 
         # Correlation Graph
-        st.subheader("The Churn Predictor: Mood vs. Attendance")
+        st.subheader("The Burnout Predictor: Mood vs. Attendance")
         fig = px.scatter(df, x="Mood_Score", y="Attendance_Rate", 
                          size="Performance_Score", color="Risk_Level",
                          hover_name="Employee_ID",
