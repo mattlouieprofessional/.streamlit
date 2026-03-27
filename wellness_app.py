@@ -23,7 +23,7 @@ if 'app_data' not in st.session_state:
 # --- 3. SIDEBAR ---
 with st.sidebar:
     st.title("🛡️ ProCARE Portal")
-    role = st.radio("Portal Access:", "Employee View", "HR Admin View")
+    role = st.radio("Portal Access:", ["Employee View", "HR Admin View"])
     st.divider()
     st.info("CARE Initiative: Employee Wellness Monitoring")
 
