@@ -11,7 +11,7 @@ MANAGER_PASSWORD = "procareadmin"
 # ProCARE requires tracking signals over time to predict churn [cite: 66, 69]
 def get_procare_data():
     data = {
-        'Employee_ID': ['EMP-1', 'EMP-2', 'EMP-3', 'EMP-4', 'EMP-5'],
+        'Employee_ID': ['EMP-101', 'EMP-102', 'EMP-103', 'EMP-104', 'EMP-105'],
         'Wellbeing_Score': [8.5, 4.2, 7.8, 3.5, 9.2],
         'Attendance_Rate': [98, 65, 92, 45, 100], # Attendance % [cite: 66]
         'Sick_Leave_Spikes': [0, 5, 1, 7, 0], # Recent unexpected leave [cite: 61]
@@ -60,54 +60,37 @@ if role == "Employee Check-in":
     st.caption("Repeat 4 times to shift from 'Stress Mode' to 'Executive Focus'.")
 
 # --- VIEW 2: MANAGER DASHBOARD ---
+# --- MANAGER DASHBOARD (Predictive Intelligence Layer) ---
 elif role == "Manager Dashboard":
     pwd = st.text_input("Enter Manager Credentials:", type="password")
     if pwd == MANAGER_PASSWORD:
-        st.header("📈 Retention Intelligence Dashboard")
-        st.write("Identify burnout and churn risk 60-90 days in advance.")
+        st.header("📈 ProCARE Retention Intelligence")
         
+        # Fetch the data
         df = get_procare_data()
 
-        # Key Metrics [cite: 75]
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Avg. Wellbeing", f"{df['Wellbeing_Score'].mean()}/10")
-        m2.metric("Attendance Stability", f"{df['Attendance_Rate'].mean()}%")
-        m3.metric("High-Risk Alerts", "2")
+        # SAFETY CHECK: Ensure all required columns exist for Plotly
+        required_cols = ["Wellbeing_Score", "Attendance_Rate", "Sick_Leave_Spikes", "Risk_Level", "Trend", "Satisfaction_eNPS"]
+        for col in required_cols:
+            if col not in df.columns:
+                df[col] = 0 if "Score" in col or "Rate" in col else "Unknown"
 
-        # Attendance vs. Wellbeing Matrix [cite: 66]
-        st.subheader("Predictive Signal Architecture: Attendance & Wellbeing Trends")
-        # Attendance vs. Wellbeing Matrix
-        st.subheader("Predictive Signal Architecture: Attendance & Wellbeing Trends")
+        # 2. Predictive Signal Matrix
+        st.subheader("Predictive Signal Architecture: Attendance & Wellbeing")
         
-        # Proactive Model: Mapping key wellness signals to identify at-risk employees (cite: 41, 46)
-        fig = px.scatter(df, 
-                         x="Wellbeing_Score", 
-                         y="Attendance_Rate", 
-                         size="Sick_Leave_Spikes", 
-                         color="Risk_Level",
-                         hover_name="Employee_ID",
-                         # Includes Trends and Satisfaction (eNPS) as predictive relevance (cite: 66)
-                         hover_data=["Trend", "Satisfaction_eNPS"], 
-                         title="ProCARE Risk Stratification Matrix")
-        
-        st.plotly_chart(fig, use_container_width=True)
-        st.plotly_chart(fig, use_container_width=True)
-
-        # Risk Stratification [cite: 54, 55]
-        st.subheader("Risk Tier Monitoring")
-        st.dataframe(df.style.highlight_max(axis=0, subset=['Sick_Leave_Spikes'], color='#ffcccc'))
-
-        # Intervention Playbooks [cite: 56, 80]
-        st.divider()
-        st.subheader("Targeted Interventions")
-        selected = st.selectbox("Review at-risk employee:", df[df['Risk_Level'] != 'Low']['Employee_ID'])
-        
-        if selected:
-            st.warning(f"Warning: {selected} shows declining attendance and satisfaction trends.")
-            st.write("**Action Plan:**")
-            st.write("- [ ] **Workload Audit:** Review after-hours login frequency.")
-            st.write("- [ ] **Manager Check-in:** Address perceived loss of autonomy.")
-            st.write("- [ ] **Recognition Cycle:** Ensure employee has received recent feedback.")
-
-    elif pwd:
-        st.error("Invalid Credentials.")
+        try:
+            fig = px.scatter(df, 
+                             x="Wellbeing_Score", 
+                             y="Attendance_Rate", 
+                             size="Sick_Leave_Spikes", 
+                             color="Risk_Level",
+                             hover_name="Employee_ID",
+                             hover_data=["Trend", "Satisfaction_eNPS"],
+                             color_discrete_map={
+                                 "Severe": "red", "High": "orange", 
+                                 "Medium": "yellow", "Low": "green"
+                             },
+                             title="ProCARE Risk Stratification")
+            st.plotly_chart(fig, use_container_width=True)
+        except Exception as e:
+            st.error(f"Visualization Error: Missing Data Columns. Please check case_study_data.csv")
