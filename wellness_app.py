@@ -2,120 +2,100 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from textblob import TextBlob
 
-# --- CONFIG & PROCARE BRANDING ---
-st.set_page_config(page_title="ProCARE CARE Initiative", layout="wide")
+# --- CONFIG & BRANDING ---
+st.set_page_config(page_title="ProCARE CARE Portal", layout="wide")
 MANAGER_PASSWORD = "procareadmin"
 
-# --- MOCK DATA GENERATOR (Longitudinal Trends) ---
-# ProCARE requires tracking how wellness changes over time [cite: 69, 70]
+# --- MOCK DATA: LONGITUDINAL TRENDS ---
+# ProCARE requires tracking signals over time to predict churn [cite: 66, 69]
 def get_procare_data():
     data = {
-        'Employee_ID': ['EMP-1', 'EMP-2', 'EMP-3', 'EMP-4', 'EMP-5'],
-        'Department': ['Clinical', 'Admin', 'Clinical', 'IT', 'Operations'],
-        'Satisfaction_eNPS': [9, 4, 8, 3, 10], # 0-10 scale 
-        'Attendance_Score': [95, 60, 85, 40, 98], # % of expected presence
-        'Sick_Leave_Spikes': [0, 4, 1, 6, 0], # Recent unexpected leave 
-        'PTO_Utilization': [80, 10, 75, 5, 100], # % used 
-        'Risk_Level': ['Low', 'High', 'Medium', 'Severe', 'Low'],
+        'Employee_ID': ['EMP-101', 'EMP-102', 'EMP-103', 'EMP-104', 'EMP-105'],
+        'Wellbeing_Score': [8.5, 4.2, 7.8, 3.5, 9.2],
+        'Attendance_Rate': [98, 65, 92, 45, 100], # Attendance % [cite: 66]
+        'Sick_Leave_Spikes': [0, 5, 1, 7, 0], # Recent unexpected leave [cite: 61]
+        'Satisfaction_eNPS': [9, 3, 8, 2, 10], # Employee Net Promoter Score [cite: 66]
+        'Risk_Tier': ['Low', 'High', 'Medium', 'Severe', 'Low'],
         'Trend': ['Stable', 'Declining', 'Stable', 'Severe Drop', 'Stable']
     }
     return pd.DataFrame(data)
 
-# --- SIDEBAR NAVIGATION ---
+# --- SIDEBAR ---
 with st.sidebar:
-    st.title("Employee ProCARE Portal")
-    st.write("Wellness & Retention Intelligence [cite: 17]")
+    st.title("🛡️ ProCARE Portal")
+    st.write("CARE Initiative: Wellness & Retention")
     role = st.radio("Select View:", ["Employee Check-in", "Manager Dashboard"])
-    st.divider()
-    st.caption("Confidential & Privacy-First [cite: 59, 76]")
 
-# --- VIEW 1: EMPLOYEE CHECK-IN (Data Collection Layer) ---
+# --- VIEW 1: EMPLOYEE CHECK-IN ---
 if role == "Employee Check-in":
-    st.header("🌟 Daily CARE for those who care")
-    st.info("Your input helps ProCARE proactively to improve wellbeing in the workplace [cite: 11].")
+    st.header("🌟 CARE Daily Pulse")
+    st.info("Continuous evaluation of holistic state: Physical, Mental, and Professional.")
 
-    # 1. Mental/Emotional (Sentiment Analysis)
-    st.subheader("1. Mental & Emotional State")
-    reflection = st.text_area("How are you feeling about your workload and impact today?")
+    # Wellbeing & Satisfaction
+    st.subheader("1. Holistic Wellbeing")
+    wellbeing = st.slider("Rate your overall wellbeing (Mental/Physical) today:", 1, 10, 7)
     
-    # 2. Satisfaction (eNPS) - Professional Fulfillment [cite: 63]
     st.subheader("2. Workplace Satisfaction")
-    sat_score = st.select_slider(
-        "How satisfied do you feel on your usual workday?",
-        options=range(1, 11), value=7
+    satisfaction = st.select_slider(
+        "How likely are you to recommend ProCARE as a great place to work?",
+        options=range(1, 11), value=8
     )
 
-    # 3. Physical/Attendance Context [cite: 61, 63]
-    st.subheader("3. Physical & Work-Life Balance")
-    col1, col2 = st.columns(2)
-    with col1:
-        energy = st.slider("Energy Level", 1, 10, 5)
-    with col2:
-        autonomy = st.slider("Sense of Autonomy over Schedule", 1, 10, 5)
-
-    if st.button("Submit Anonymous Pulse"):
-        # Process Sentiment
-        sentiment = TextBlob(reflection).sentiment.polarity
-        if sentiment < 0 and sat_score < 5:
-            st.warning("Detection: High Dissonance. Please consider a 5-minute brain break below.")
-        else:
-            st.success("Pulse Captured. Thank you for contributing to our CARE Culture[cite: 8].")
+    if st.button("Submit Pulse"):
+        st.success("Data captured anonymously. Thank you for contributing to our CARE Culture.")
         st.balloons()
 
-    # PFC Engagement Section (The Intervention) [cite: 81]
+    # Navy SEAL Intervention (PFC Engagement)
     st.divider()
-    st.subheader("🧠 PFC Reset (Grounding Exercise)")
-    st.write("Shift from reactive stress to executive focus.")
-    st.video("https://www.youtube.com/watch?v=sj8Sg8qnjOg") 
+    st.subheader("Navy SEAL Box Breathing")
+    st.write("Goal: Reset your nervous system and re-engage your Prefrontal Cortex.")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Inhale", "4 Sec")
+    col2.metric("Hold", "4 Sec")
+    col3.metric("Exhale", "4 Sec")
+    col4.metric("Hold", "4 Sec")
+    
+    st.caption("Repeat 4 times to shift from 'Stress Mode' to 'Executive Focus'.")
 
-# --- VIEW 2: MANAGER DASHBOARD (Predictive Intelligence Layer) ---
+# --- VIEW 2: MANAGER DASHBOARD ---
 elif role == "Manager Dashboard":
     pwd = st.text_input("Enter Manager Credentials:", type="password")
     if pwd == MANAGER_PASSWORD:
-        st.header("📈 Retention Intelligence Engine")
-        st.write("Predicting churn risk 60-90 days before disengagement[cite: 36].")
+        st.header("📈 Retention Intelligence Dashboard")
+        st.write("Identify burnout and churn risk 60-90 days in advance.")
         
         df = get_procare_data()
 
-        # Metrics Overview
+        # Key Metrics [cite: 75]
         m1, m2, m3 = st.columns(3)
-        m1.metric("Avg. Team Satisfaction", f"{df['Satisfaction_eNPS'].mean()}/10", "-5% Trend")
-        m2.metric("Attendance Stability", "75.6%", "-12% Trend")
-        m3.metric("High-Risk Alerts", "2", "+1 Total")
+        m1.metric("Avg. Wellbeing", f"{df['Wellbeing_Score'].mean()}/10")
+        m2.metric("Attendance Stability", f"{df['Attendance_Rate'].mean()}%")
+        m3.metric("High-Risk Alerts", "2")
 
-        # Attendance vs. Satisfaction Correlation
-        st.subheader("The Churn Predictor: Satisfaction vs. Attendance")
-        fig = px.scatter(df, x="Satisfaction_eNPS", y="Attendance_Score", 
+        # Attendance vs. Wellbeing Matrix [cite: 66]
+        st.subheader("Predictive Signal Architecture: Attendance & Wellbeing Trends")
+        fig = px.scatter(df, x="Wellbeing_Score", y="Attendance_Rate", 
                          size="Sick_Leave_Spikes", color="Risk_Level",
-                         hover_name="Employee_ID", title="Risk Stratification Matrix [cite: 54, 55]")
+                         hover_name="Employee_ID", text="Trend")
         st.plotly_chart(fig, use_container_width=True)
 
-        # Risk Tier Table
-        st.subheader("Employee Risk Tiers & Predictive Signals ")
-        
-        def color_risk(val):
-            if val in ['High', 'Severe']: return 'background-color: #ffcccc'
-            if val == 'Medium': return 'background-color: #fff4cc'
-            return ''
+        # Risk Stratification [cite: 54, 55]
+        st.subheader("Risk Tier Monitoring")
+        st.dataframe(df.style.highlight_max(axis=0, subset=['Sick_Leave_Spikes'], color='#ffcccc'))
 
-        st.table(df.style.applymap(color_risk, subset=['Risk_Level']))
-
-        # Intervention Playbooks [cite: 56, 57]
+        # Intervention Playbooks [cite: 56, 80]
         st.divider()
-        st.subheader("Actionable Interventions")
-        selected = st.selectbox("Select Employee for Intervention Plan:", df['Employee_ID'])
-        emp_data = df[df['Employee_ID'] == selected].iloc[0]
-
-        if emp_data['Risk_Level'] in ['High', 'Severe']:
-            st.error(f"ALERT: {selected} shows 'Severe Drop' in attendance and 'Extreme Underuse' of PTO.")
-            st.write("**Recommended Intervention:**")
-            st.write("- [ ] Immediate Manager 1:1 to address 'Perceived Agency Deficit'.")
-            st.write("- [ ] Mandatory 'Wellness Break' / PTO encouragement to prevent burnout.")
-            st.write("- [ ] Workload audit to identify after-hours work patterns.")
-        else:
-            st.success(f"{selected} is currently in the Low-Risk tier. Maintain standard recognition cycles.")
+        st.subheader("Targeted Interventions")
+        selected = st.selectbox("Review at-risk employee:", df[df['Risk_Level'] != 'Low']['Employee_ID'])
+        
+        if selected:
+            st.warning(f"Warning: {selected} shows declining attendance and satisfaction trends.")
+            st.write("**Action Plan:**")
+            st.write("- [ ] **Workload Audit:** Review after-hours login frequency.")
+            st.write("- [ ] **Manager Check-in:** Address perceived loss of autonomy.")
+            st.write("- [ ] **Recognition Cycle:** Ensure employee has received recent feedback.")
 
     elif pwd:
-        st.error("Access Denied.")
+        st.error("Invalid Credentials.")
