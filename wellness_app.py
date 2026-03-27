@@ -76,9 +76,21 @@ elif role == "Manager Dashboard":
 
         # Attendance vs. Wellbeing Matrix [cite: 66]
         st.subheader("Predictive Signal Architecture: Attendance & Wellbeing Trends")
-        fig = px.scatter(df, x="Wellbeing_Score", y="Attendance_Rate", 
-                         size="Sick_Leave_Spikes", color="Risk_Level",
-                         hover_name="Employee_ID", text="Trend")
+        # Attendance vs. Wellbeing Matrix
+        st.subheader("Predictive Signal Architecture: Attendance & Wellbeing Trends")
+        
+        # Proactive Model: Mapping key wellness signals to identify at-risk employees (cite: 41, 46)
+        fig = px.scatter(df, 
+                         x="Wellbeing_Score", 
+                         y="Attendance_Rate", 
+                         size="Sick_Leave_Spikes", 
+                         color="Risk_Level",
+                         hover_name="Employee_ID",
+                         # Includes Trends and Satisfaction (eNPS) as predictive relevance (cite: 66)
+                         hover_data=["Trend", "Satisfaction_eNPS"], 
+                         title="ProCARE Risk Stratification Matrix")
+        
+        st.plotly_chart(fig, use_container_width=True)
         st.plotly_chart(fig, use_container_width=True)
 
         # Risk Stratification [cite: 54, 55]

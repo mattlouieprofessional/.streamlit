@@ -1,11 +1,6 @@
-Employee_ID,Stated_Happiness,Spiritual_Alignment,Physical_Meeting_Hours
-EMP-1,9,3,8
-EMP-2,4,4,7
-EMP-3,8,2,9
-EMP-4,7,5,4
-EMP-5,10,1,10
-EMP-6,6,6,3
-EMP-7,9,2,8
-EMP-8,5,5,5
-EMP-9,8,3,7
-EMP-10,9,4,9
+Employee_ID,Wellbeing_Score,Attendance_Rate,Sick_Leave_Spikes,Satisfaction_eNPS,Risk_Tier,Trend
+EMP-101,8.5,98,0,9,Low,Stable
+EMP-102,4.2,65,5,3,High,Declining
+EMP-103,7.8,92,1,8,Medium,Stable
+EMP-104,3.5,45,7,2,Severe,Severe Drop
+EMP-105,9.2,100,0,10,Low,Stable
