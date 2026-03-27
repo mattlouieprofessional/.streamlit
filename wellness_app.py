@@ -11,7 +11,7 @@ MANAGER_PASSWORD = "procareadmin"
 # ProCARE requires tracking signals over time to predict churn [cite: 66, 69]
 def get_procare_data():
     data = {
-        'Employee_ID': ['EMP-101', 'EMP-102', 'EMP-103', 'EMP-104', 'EMP-105'],
+        'Employee_ID': ['EMP-1', 'EMP-2', 'EMP-3', 'EMP-4', 'EMP-5'],
         'Wellbeing_Score': [8.5, 4.2, 7.8, 3.5, 9.2],
         'Attendance_Rate': [98, 65, 92, 45, 100], # Attendance % [cite: 66]
         'Sick_Leave_Spikes': [0, 5, 1, 7, 0], # Recent unexpected leave [cite: 61]
