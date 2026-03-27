@@ -1,96 +1,99 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import plotly.express as px
+import time
 
-# --- CONFIG & BRANDING ---
+# --- 1. CONFIG & BRANDING ---
 st.set_page_config(page_title="ProCARE CARE Portal", layout="wide")
-MANAGER_PASSWORD = "procareadmin"
+HR_PASSWORD = "procareadmin" 
 
-# --- MOCK DATA: LONGITUDINAL TRENDS ---
-# ProCARE requires tracking signals over time to predict churn [cite: 66, 69]
+# --- 2. DATA ENGINE ---
 def get_procare_data():
     data = {
         'Employee_ID': ['EMP-101', 'EMP-102', 'EMP-103', 'EMP-104', 'EMP-105'],
-        'Wellbeing_Score': [8.5, 4.2, 7.8, 3.5, 9.2],
-        'Attendance_Rate': [98, 65, 92, 45, 100], # Attendance % [cite: 66]
-        'Sick_Leave_Spikes': [0, 5, 1, 7, 0], # Recent unexpected leave [cite: 61]
-        'Satisfaction_eNPS': [9, 3, 8, 2, 10], # Employee Net Promoter Score [cite: 66]
-        'Risk_Tier': ['Low', 'High', 'Medium', 'Severe', 'Low'],
+        'Mood_Score': [8, 3, 7, 2, 9],
+        'Attendance_Rate': [95, 60, 88, 45, 100], 
+        'Risk_Level': ['Low', 'High', 'Medium', 'Severe', 'Low'],
         'Trend': ['Stable', 'Declining', 'Stable', 'Severe Drop', 'Stable']
     }
     return pd.DataFrame(data)
 
-# --- SIDEBAR ---
+# --- 3. SIDEBAR ---
 with st.sidebar:
-    st.title("🛡️ ProCARE Portal")
-    st.write("CARE Initiative: Wellness & Retention")
-    role = st.radio("Select View:", ["Employee Check-in", "Manager Dashboard"])
+    st.title("⚕️ ProCARE Portal")
+    role = st.radio("Portal Access:", ["Employee (Check-in)", "HR Representative (Admin)"])
+    st.divider()
+    st.caption("Privacy-First & HIPAA Compliant")
 
-# --- VIEW 1: EMPLOYEE CHECK-IN ---
-if role == "Employee Check-in":
-    st.header("🌟 CARE Daily Pulse")
-    st.info("Continuous evaluation of holistic state: Physical, Mental, and Professional.")
-
-    # Wellbeing & Satisfaction
-    st.subheader("1. Holistic Wellbeing")
-    wellbeing = st.slider("Rate your overall wellbeing (Mental/Physical) today:", 1, 10, 7)
+# --- 4. EMPLOYEE VIEW ---
+if role == "Employee (Check-in)":
+    st.header("🌟 Daily CARE Pulse")
     
-    st.subheader("2. Workplace Satisfaction")
-    satisfaction = st.select_slider(
-        "How likely are you to recommend ProCARE as a great place to work?",
-        options=range(1, 11), value=8
-    )
+    # Positive Reinforcement
+    st.success("😊 Your work today at ProCARE helps physicians focus on patients. You make an impact!")
+
+    # Check-in Inputs
+    col1, col2 = st.columns(2)
+    with col1:
+        mood = st.slider("How is your mood/stress today?", 1, 10, 7)
+    with col2:
+        attendance = st.selectbox("Work Status:", ["On-site", "Remote", "Sick/Personal Leave"])
 
     if st.button("Submit Pulse"):
-        st.success("Data captured anonymously. Thank you for contributing to our CARE Culture.")
-        st.balloons()
+        st.toast("Pulse captured. Thank you for your honesty.")
+        if mood <= 4:
+            st.warning("It looks like you're carrying a lot today. Try the PFC reset below.")
 
-    # Navy SEAL Intervention (PFC Engagement)
+    # --- INTERACTIVE NAVY SEAL BREATHING ---
     st.divider()
-    st.subheader("Navy SEAL Box Breathing")
-    st.write("Goal: Reset your nervous system and re-engage your Prefrontal Cortex.")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Inhale", "4 Sec")
-    col2.metric("Hold", "4 Sec")
-    col3.metric("Exhale", "4 Sec")
-    col4.metric("Hold", "4 Sec")
-    
-    st.caption("Repeat 4 times to shift from 'Stress Mode' to 'Executive Focus'.")
+    st.subheader("Navy SEAL Box Breathing (Interactive)")
+    st.write("Click 'Start' and follow the visual cues to reset your nervous system.")
 
-# --- VIEW 2: MANAGER DASHBOARD ---
-# --- MANAGER DASHBOARD (Predictive Intelligence Layer) ---
-elif role == "Manager Dashboard":
-    pwd = st.text_input("Enter Manager Credentials:", type="password")
-    if pwd == MANAGER_PASSWORD:
-        st.header("📈 ProCARE Retention Intelligence")
+    if st.button(" Start Breathing Exercise"):
+        phases = [
+            ("Inhale", "blue", "Fill your lungs slowly..."),
+            ("Hold", "green", "Keep the air in..."),
+            ("Exhale", "orange", "Release all tension..."),
+            ("Hold", "red", "Wait for the next breath...")
+        ]
         
-        # Fetch the data
+        # Progress Bar for Visual Feedback
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        for i in range(4): # 4 Rounds
+            for phase, color, instruction in phases:
+                status_text.markdown(f"### :{color}[{phase}]")
+                st.write(instruction)
+                # 4 seconds per phase
+                for percent in range(101):
+                    time.sleep(0.035) # Approx 4 seconds total
+                    progress_bar.progress(percent)
+        
+        st.balloons()
+        st.success("PFC Reset Complete. Great job taking care of yourself!")
+
+# --- 5. HR VIEW ---
+elif role == "HR Representative (Admin)":
+    pwd = st.text_input("Enter Admin Password:", type="password")
+    if pwd == HR_PASSWORD:
+        st.header("📈 HR Retention Intelligence")
         df = get_procare_data()
 
-        # SAFETY CHECK: Ensure all required columns exist for Plotly
-        required_cols = ["Wellbeing_Score", "Attendance_Rate", "Sick_Leave_Spikes", "Risk_Level", "Trend", "Satisfaction_eNPS"]
-        for col in required_cols:
-            if col not in df.columns:
-                df[col] = 0 if "Score" in col or "Rate" in col else "Unknown"
-
-        # 2. Predictive Signal Matrix
-        st.subheader("Predictive Signal Architecture: Attendance & Wellbeing")
+        # Outreach Flags
+        at_risk = df[(df['Mood_Score'] <= 4) | (df['Attendance_Rate'] < 70)]
+        st.subheader("🚨 Priority Outreach List")
         
-        try:
-            fig = px.scatter(df, 
-                             x="Wellbeing_Score", 
-                             y="Attendance_Rate", 
-                             size="Sick_Leave_Spikes", 
-                             color="Risk_Level",
-                             hover_name="Employee_ID",
-                             hover_data=["Trend", "Satisfaction_eNPS"],
-                             color_discrete_map={
-                                 "Severe": "red", "High": "orange", 
-                                 "Medium": "yellow", "Low": "green"
-                             },
-                             title="ProCARE Risk Stratification")
-            st.plotly_chart(fig, use_container_width=True)
-        except Exception as e:
-            st.error(f"Visualization Error: Missing Data Columns. Please check case_study_data.csv")
+        if not at_risk.empty:
+            st.write(at_risk[['Employee_ID', 'Mood_Score', 'Attendance_Rate', 'Risk_Level']])
+            st.info("💡 Reach out to these individuals to offer flexible scheduling or wellness resources.")
+        else:
+            st.success("All systems green. No critical burnout signals detected.")
+
+        # Risk Matrix
+        fig = px.scatter(df, x="Mood_Score", y="Attendance_Rate", color="Risk_Level", 
+                         size=[20, 20, 20, 20, 20], title="Mood vs Attendance Correlation")
+        st.plotly_chart(fig)
+
+    elif pwd:
+        st.error("Access Denied.")

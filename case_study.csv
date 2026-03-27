@@ -1,6 +1,6 @@
-Employee_ID,Wellbeing_Score,Attendance_Rate,Sick_Leave_Spikes,Satisfaction_eNPS,Risk_Tier,Trend
-EMP-101,8.5,98,0,9,Low,Stable
-EMP-102,4.2,65,5,3,High,Declining
-EMP-103,7.8,92,1,8,Medium,Stable
-EMP-104,3.5,45,7,2,Severe,Severe Drop
-EMP-105,9.2,100,0,10,Low,Stable
+Employee_ID,Mood_Score,Attendance_Rate,Sick_Days_Recent,Satisfaction_eNPS,Risk_Level,Trend
+EMP-101,8,95,0,9,Low,Stable
+EMP-102,3,60,4,3,High,Declining
+EMP-103,7,88,1,8,Medium,Stable
+EMP-104,2,45,6,2,Severe,Severe Drop
+EMP-105,9,100,0,10,Low,Stable
